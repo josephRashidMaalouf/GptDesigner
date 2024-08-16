@@ -19,7 +19,8 @@ let generatedCode;
 const btn = document
   .getElementById("btn")
   .addEventListener("click", async () => {
-    content.innerHTML = "<p>processing your request</p>";
+    document.getElementById("loading-msg").innerText =
+      "Making all your wishes come true...";
     const userInput = document.getElementById("user-input").value;
 
     gptRequestDto.messages.push({
