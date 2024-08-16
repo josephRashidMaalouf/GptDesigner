@@ -1,54 +1,50 @@
 const apiURL = "https://api.openai.com/v1/chat/completions";
 const gptKey = "";
 
-document.getElementById("submitBtn").addEventListener("click", async () => {
-  const userDescription = document.getElementById("description").value;
+const gptRequestDto = {
+  model: "gpt-4o-2024-05-13",
+  messages: [
+    {
+      role: "system",
+      content:
+        "You are a helpful web designer assistant. You will receive a description of how a user wishes a website to look like, and you will do your best to provide the user with code using HTML, CSS, and JavaScript. The code you provide should only be code that is written within the body tags. ONLY RETURN HTML",
+    },
+  ],
+};
 
-  // Hide input section and show loading message
-  document.getElementById("inputSection").style.display = "none";
-  document.getElementById("loadingMessage").style.display = "block";
+const content = document.getElementById("content");
 
-  const gptRequestDto = {
-    model: "gpt-4o-2024-05-13",
-    messages: [
-      {
-        role: "system",
-        content:
-          "You are a helpful web designer assistant. You will receive a description of how a user wishes a website to look like, and you will do your best to provide the user with code using HTML, CSS, and JavaScript. The code you provide should only be code that is written within the body tags.",
-      },
-      {
-        role: "user",
-        content: userDescription,
-      },
-    ],
-  };
+let generatedCode;
 
-  try {
-    const response = await fetch(apiURL, {
+const btn = document
+  .getElementById("btn")
+  .addEventListener("click", async () => {
+    const userInput = document.getElementById("user-input").value;
+
+    gptRequestDto.messages.push({
+      role: "user",
+      content: userInput,
+    });
+    console.log(userInput);
+    console.log(gptRequestDto.messages);
+    await fetch(apiURL, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${gptKey}`,
       },
       body: JSON.stringify(gptRequestDto),
-    });
-
-    const data = await response.json();
-    const generatedCode = data.choices[0].message.content;
-
-    document.getElementById("loadingMessage").style.display = "none";
-    document.getElementById("result").innerHTML = generatedCode;
-
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        generatedCode = data.choices[0].message.content;
+      });
+    content.innerHTML = generatedCode;
     const downloadBtn = document.createElement("button");
     downloadBtn.innerText = "Download Code";
     downloadBtn.addEventListener("click", () => downloadCode(generatedCode));
     document.body.appendChild(downloadBtn);
-  } catch (error) {
-    console.error("Error:", error);
-    document.getElementById("loadingMessage").innerText =
-      "An error occurred. Please try again.";
-  }
-});
+  });
 
 function downloadCode(code) {
   const blob = new Blob([code], { type: "text/plain" });
